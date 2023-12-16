@@ -30,6 +30,9 @@ func UpdateGauge(w http.ResponseWriter, r *http.Request) {
 	}
 
 	valueStr := parts[4]
+	if valueStr == "" {
+		http.Error(w, "Incorrect value type", http.StatusBadRequest)
+	}
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
 		http.Error(w, "Incorrect value type", http.StatusBadRequest)
@@ -63,7 +66,11 @@ func UpdateCounter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Metric name is required", http.StatusNotFound)
 		return
 	}
-	value, err := strconv.ParseInt(parts[4], 10, 64)
+	valueStr := parts[4]
+	if valueStr == "" {
+		http.Error(w, "Incorrect value type", http.StatusBadRequest)
+	}
+	value, err := strconv.ParseInt(valueStr, 10, 64)
 	if err != nil {
 		http.Error(w, "Incorrect value format", http.StatusBadRequest)
 		return
