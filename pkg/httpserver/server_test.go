@@ -21,6 +21,7 @@ func TestServer_ErrServ(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status OK, got %v", res.StatusCode)
