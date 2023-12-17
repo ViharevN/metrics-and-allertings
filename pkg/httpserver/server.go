@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"metrics/pkg/consts"
 	"net/http"
 )
 
@@ -14,7 +13,7 @@ type Server struct {
 func New(handler http.Handler) *Server {
 	httpserver := &http.Server{
 		Handler: handler,
-		Addr:    consts.Addr,
+		Addr:    "localhost:8080",
 	}
 
 	server := &Server{

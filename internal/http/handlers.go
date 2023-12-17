@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"metrics/internal/entity"
 	"net/http"
 	"strconv"
@@ -45,6 +46,7 @@ func UpdateGauge(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gauge.GaugeStorage[name] = value
+	fmt.Println(gauge.GaugeStorage)
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("OK"))
@@ -84,6 +86,7 @@ func UpdateCounter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	counter.CounterStorage[name] += value
+	fmt.Println(counter.CounterStorage)
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("OK"))

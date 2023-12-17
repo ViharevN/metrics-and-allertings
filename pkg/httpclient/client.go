@@ -86,8 +86,4 @@ func (a *Agent) sendMetric(typ, name string, value float64) {
 		return
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		fmt.Println("server returned non-OK status:", resp.Status)
-	}
 }
