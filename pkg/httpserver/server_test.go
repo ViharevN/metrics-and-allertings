@@ -3,6 +3,7 @@ package httpserver
 import (
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestServer_ErrServ(t *testing.T) {
@@ -11,6 +12,8 @@ func TestServer_ErrServ(t *testing.T) {
 	})
 
 	server := New(handler)
+
+	time.Sleep(100 * time.Millisecond)
 
 	client := &http.Client{}
 
