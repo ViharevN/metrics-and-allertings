@@ -1,11 +1,13 @@
 package http
 
 import (
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(mux *http.ServeMux) {
-	mux.HandleFunc("/update/gauge/", UpdateGauge)
-	mux.HandleFunc("/update/counter/", UpdateCounter)
-	mux.HandleFunc("/update/", ErrValidTypeMetric)
+func NewRouter(r *gin.Engine) {
+	r.POST("/update/gauge/:name/:value", UpdateGauge)
+	r.POST("/update/counter/:name/:value", UpdateCounter)
+	r.GET("/value/:type/:name", GetValue)
+	r.GET("/", MetricsList)
+	r.LoadHTMLGlob("pkg/html/template/metrics.tmpl")
 }

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -9,49 +10,51 @@ import (
 
 func TestUpdateGauge(t *testing.T) {
 	t.Run("Valid Request", func(t *testing.T) {
-		req, err := http.NewRequest("POST", "/update/gauge/test/42.5", nil)
-		assert.NoError(t, err)
+		r := gin.Default()
+		r.POST("/update/gauge/:name/:value", UpdateGauge)
 
-		recorder := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/update/gauge/test/42.5", nil)
+		resp := httptest.NewRecorder()
 
-		UpdateGauge(recorder, req)
+		r.ServeHTTP(resp, req)
 
-		assert.Equal(t, http.StatusOK, recorder.Code)
-
-		assert.Equal(t, "text/plain", recorder.Header().Get("Content-Type"))
+		assert.Equal(t, http.StatusOK, resp.Code)
+		assert.Equal(t, "text/plain; charset=utf-8", resp.Header().Get("Content-Type"))
 	})
 
 	t.Run("Invalid Method", func(t *testing.T) {
-		req, err := http.NewRequest("GET", "/update/gauge/test/42.5", nil)
-		assert.NoError(t, err)
+		r := gin.Default()
+		r.POST("/update/gauge/:name/:value", UpdateGauge)
 
-		recorder := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/update/gauge/test/42.5", nil)
+		resp := httptest.NewRecorder()
 
-		UpdateGauge(recorder, req)
+		r.ServeHTTP(resp, req)
 
-		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("Invalid Metric", func(t *testing.T) {
-		req, err := http.NewRequest("POST", "/update/gauge//42.5", nil)
-		assert.NoError(t, err)
+		r := gin.Default()
+		r.POST("/update/gauge/:name/:value", UpdateGauge)
 
-		recorder := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/update/gauge//42.5", nil)
+		resp := httptest.NewRecorder()
 
-		UpdateGauge(recorder, req)
+		r.ServeHTTP(resp, req)
 
-		assert.Equal(t, http.StatusNotFound, recorder.Code)
+		assert.Equal(t, http.StatusNotFound, resp.Code)
 	})
 
 	t.Run("Invalid Value", func(t *testing.T) {
-		req, err := http.NewRequest("GET", "/update/gauge/test/invalid", nil)
-		assert.NoError(t, err)
+		r := gin.Default()
+		r.POST("/update/gauge/:name/:value", UpdateGauge)
 
-		recorder := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/update/gauge/test/invalid", nil)
+		resp := httptest.NewRecorder()
 
-		UpdateGauge(recorder, req)
+		r.ServeHTTP(resp, req)
 
-		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Code)
 	})
-
 }

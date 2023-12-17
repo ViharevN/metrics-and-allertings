@@ -1,114 +1,96 @@
 package http
 
 import (
-	"fmt"
+	"github.com/gin-gonic/gin"
 	"metrics/internal/entity"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 var gauge entity.Gauge
+var gaugeStorage = make(map[string]float64)
 var counter entity.Counter
+var counterStorage = make(map[string]int64)
 
-func UpdateGauge(w http.ResponseWriter, r *http.Request) {
+func UpdateGauge(c *gin.Context) {
+	name := c.Param("name")
+	valueStr := c.Param("value")
 
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST-requests are allowed!", http.StatusBadRequest)
-		return
-	}
-
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != 5 {
-		http.Error(w, "Incorrect request format", http.StatusNotFound)
-		return
-	}
-
-	name := parts[3]
 	if name == "" {
-		http.Error(w, "Metric name is required", http.StatusNotFound)
-		return
+		c.JSON(http.StatusNotFound, gin.H{"error": "Metric name is required"})
 	}
 
-	valueStr := parts[4]
-	if valueStr == "" {
-		http.Error(w, "Incorrect value type", http.StatusBadRequest)
-		return
-	}
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
-		http.Error(w, "Incorrect value type", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect value type"})
 		return
 	}
 
-	if gauge.GaugeStorage == nil {
-		gauge.GaugeStorage = make(map[string]float64)
-	}
+	gaugeStorage[name] = value
 
-	gauge.GaugeStorage[name] = value
-	fmt.Println(gauge.GaugeStorage)
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("OK"))
+	c.String(http.StatusOK, "OK")
 }
 
-func UpdateCounter(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST-requests are allowed!", http.StatusBadRequest)
-		return
-	}
+func UpdateCounter(c *gin.Context) {
+	name := c.Param("name")
+	valueStr := c.Param("value")
 
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 5 {
-		http.Error(w, "Metric name is required", http.StatusNotFound)
-		return
-	}
-
-	name := parts[3]
 	if name == "" {
-		http.Error(w, "Metric name is required", http.StatusNotFound)
-		return
-	}
-
-	valueStr := parts[4]
-	if valueStr == "" {
-		http.Error(w, "Incorrect value type", http.StatusBadRequest)
-		return
+		c.JSON(http.StatusNotFound, gin.H{"error": "Metric name is required"})
 	}
 	value, err := strconv.ParseInt(valueStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Incorrect value format", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect value format"})
 		return
 	}
 
-	if counter.CounterStorage == nil {
-		counter.CounterStorage = make(map[string]int64)
-	}
+	counterStorage[name] += value
 
-	counter.CounterStorage[name] += value
-	fmt.Println(counter.CounterStorage)
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("OK"))
+	c.String(http.StatusOK, "OK")
 }
 
-func ErrValidTypeMetric(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Metric name is required", http.StatusNotFound)
+func GetValue(c *gin.Context) {
+	typ := c.Param("type")
+	name := c.Param("name")
+
+	var value float64
+	var ok bool
+
+	if typ == "gauge" {
+		value, ok = gaugeStorage[name]
+	} else if typ == "counter" {
+		var intValue int64
+		intValue, ok = counterStorage[name]
+		if !ok {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Metric not found"})
+			return
+		}
+		value = float64(intValue)
+	} else {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Invalid metric type"})
 		return
 	}
 
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 5 {
-		http.Error(w, "Metric name is required", http.StatusNotFound)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Metric not found"})
 		return
 	}
 
-	name := parts[3]
-	if name != "counter" && name != "gauge" {
-		http.Error(w, "Invalid Name Metric", http.StatusBadRequest)
-		return
+	c.String(http.StatusOK, strconv.FormatFloat(value, 'f', -1, 64))
+}
+
+func MetricsList(c *gin.Context) {
+	metrics := make(map[string]float64)
+
+	for name, value := range gaugeStorage {
+		metrics["gauge:"+name] = value
 	}
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("OK"))
+
+	for name, value := range counterStorage {
+		metrics["counter:"+name] = float64(value)
+	}
+
+	c.HTML(http.StatusOK, "metrics.tmpl", gin.H{
+		"metrics": metrics,
+	})
 }

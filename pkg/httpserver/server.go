@@ -1,40 +1,25 @@
 package httpserver
 
 import (
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	server    *http.Server
-	errServer chan error
+	Router *gin.Engine
 }
 
 // new Server
-func New(handler http.Handler) *Server {
-	httpserver := &http.Server{
-		Handler: handler,
-		Addr:    "localhost:8080",
-	}
+func New() *Server {
+	r := gin.Default()
 
 	server := &Server{
-		server:    httpserver,
-		errServer: make(chan error),
+		Router: r,
 	}
-
-	server.start()
 
 	return server
 }
 
 // start server
-func (s *Server) start() {
-	go func() {
-		s.errServer <- s.server.ListenAndServe()
-		close(s.errServer)
-	}()
-}
-
-// error started
-func (s *Server) ErrServ() <-chan error {
-	return s.errServer
+func (s *Server) Start(addr string) {
+	s.Router.Run(addr)
 }

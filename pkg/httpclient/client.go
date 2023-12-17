@@ -67,7 +67,7 @@ func (a *Agent) Run() {
 			metrics = append(metrics, entity.Metric{Type: "gauge", Name: "TotalAlloc", Value: float64(memStats.TotalAlloc)})
 
 			metrics = append(metrics, entity.Metric{Type: "gauge", Name: "RandomValue", Value: rand.Float64()})
-			metrics = append(metrics, entity.Metric{Type: "counterName:", Name: "PollCount", Value: 1})
+			metrics = append(metrics, entity.Metric{Type: "counter", Name: "PollCount", Value: 1})
 
 		case <-reportTicker.C:
 			for _, metric := range metrics {
