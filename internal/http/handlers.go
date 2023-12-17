@@ -32,6 +32,7 @@ func UpdateGauge(w http.ResponseWriter, r *http.Request) {
 	valueStr := parts[4]
 	if valueStr == "" {
 		http.Error(w, "Incorrect value type", http.StatusBadRequest)
+		return
 	}
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
@@ -66,9 +67,11 @@ func UpdateCounter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Metric name is required", http.StatusNotFound)
 		return
 	}
+
 	valueStr := parts[4]
 	if valueStr == "" {
 		http.Error(w, "Incorrect value type", http.StatusBadRequest)
+		return
 	}
 	value, err := strconv.ParseInt(valueStr, 10, 64)
 	if err != nil {
@@ -82,6 +85,27 @@ func UpdateCounter(w http.ResponseWriter, r *http.Request) {
 
 	counter.CounterStorage[name] += value
 
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte("OK"))
+}
+
+func ErrValidTypeMetric(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Metric name is required", http.StatusNotFound)
+		return
+	}
+
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 5 {
+		http.Error(w, "Metric name is required", http.StatusNotFound)
+		return
+	}
+
+	name := parts[3]
+	if name != "counter" || name != "gauge" {
+		http.Error(w, "Invalid Name Metric", http.StatusBadRequest)
+		return
+	}
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("OK"))
 }
