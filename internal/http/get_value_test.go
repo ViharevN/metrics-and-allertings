@@ -9,11 +9,13 @@ import (
 )
 
 func TestGetValue(t *testing.T) {
+
 	t.Run("Valid Request", func(t *testing.T) {
 		r := gin.Default()
+		r.POST("/update/gauge/GCCPUFraction/42.5", UpdateGauge)
 		r.GET("/value/:type/:name", GetValue)
 
-		gauge.GaugeStorage["GCCPUFraction"] = 42.5
+		gaugeStorage["GCCPUFraction"] = 42.5
 
 		req, _ := http.NewRequest(http.MethodGet, "/value/gauge/GCCPUFraction", nil)
 		resp := httptest.NewRecorder()
