@@ -94,3 +94,10 @@ func MetricsList(c *gin.Context) {
 		"metrics": metrics,
 	})
 }
+
+func ErrHandler(c *gin.Context) {
+	typ := c.Param("type")
+	if typ != "counter" && typ != "gauge" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Metric type is required"})
+	}
+}
