@@ -1,30 +1,26 @@
 package httpserver
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestServer_ErrServ(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+	server := New()
+
+	server.Router.GET("/test", func(c *gin.Context) {
+		c.String(http.StatusOK, "it works")
 	})
 
-	server := New(handler)
+	httpTest := httptest.NewServer(server.Router)
+	defer httpTest.Close()
 
-	time.Sleep(100 * time.Millisecond)
+	res, err := http.Get(httpTest.URL + "/test")
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
 
-	client := &http.Client{}
-
-	res, err := client.Post("http://"+server.server.Addr, "text/plain", nil)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
 	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		t.Fatalf("Expected status OK, got %v", res.StatusCode)
-	}
-
 }
