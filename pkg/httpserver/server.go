@@ -14,7 +14,7 @@ type Server struct {
 func New(handler http.Handler) *Server {
 	httpserver := &http.Server{
 		Handler: handler,
-		Addr:    consts.ADDR,
+		Addr:    consts.Addr,
 	}
 
 	server := &Server{

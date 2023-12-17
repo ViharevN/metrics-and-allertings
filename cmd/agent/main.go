@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	httpclient.NewAgent("http://"+consts.ADDR_CLIENT, 2*time.Second, 10*time.Second).Run()
+	httpclient.NewAgent("http://"+consts.AddrClient, 2*time.Second, 10*time.Second).Run()
 }
