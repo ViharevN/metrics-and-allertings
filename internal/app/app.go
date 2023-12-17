@@ -14,7 +14,7 @@ func Run() {
 	mux := http.NewServeMux()
 	router.NewRouter(mux)
 	//http server
-	log.Printf("Server started on: %s", consts.ADDR)
+	log.Printf("Server started on: %s", consts.Addr)
 	server := httpserver.New(mux)
 
 	if err := <-server.ErrServ(); err != nil {
