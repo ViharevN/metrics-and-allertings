@@ -102,7 +102,7 @@ func ErrValidTypeMetric(w http.ResponseWriter, r *http.Request) {
 	}
 
 	name := parts[3]
-	if name != "counter" || name != "gauge" {
+	if name != "counter" && name != "gauge" {
 		http.Error(w, "Invalid Name Metric", http.StatusBadRequest)
 		return
 	}
